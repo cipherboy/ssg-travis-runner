@@ -2,6 +2,7 @@
 
 import yaml
 import subprocess
+import sys
 
 
 def extract_env(instance):
@@ -11,22 +12,38 @@ def extract_env(instance):
     return {env_var: env_value}
 
 
+def run_instance(instance):
+    env = extract_env(instance)
+    for command in instance['before_install']:
+        cmd = subprocess.Popen(command, shell=True, env=env)
+        cmd.wait()
+        if cmd.returncode != 0:
+            print("Command failed %d: %s" % (cmd.returncode, cmd))
+            return False
+
+    for command in instance['script']:
+        cmd = subprocess.Popen(command, shell=True, env=env)
+        cmd.wait()
+        if cmd.returncode != 0:
+            print("Command failed %d: %s" % (cmd.returncode, cmd))
+            return False
+
+    return True
+
+
 def main():
     config = yaml.load(open(".travis.yml", 'r'))
     instances = config['matrix']['include']
-    for instance in instances:
-        env = extract_env(instance)
-        for command in instance['before_install']:
-            cmd = subprocess.Popen(command, shell=True, env=env)
-            cmd.wait()
-            if cmd.returncode != 0:
-                print("Command failed %d: %s" % (cmd.returncode, cmd))
+
+    if len(sys.argv) == 1:
+        for instance in instances:
+            ok = run_instance(instance)
+            if not ok:
                 return
-        for command in instance['script']:
-            cmd = subprocess.Popen(command, shell=True, env=env)
-            cmd.wait()
-            if cmd.returncode != 0:
-                print("Command failed %d: %s" % (cmd.returncode, cmd))
+    else:
+        for num in sys.argv[1].split(','):
+            ok = run_instance(instances[int(num)])
+            if not ok:
                 return
 
 
