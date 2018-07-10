@@ -18,14 +18,14 @@ def run_instance(instance):
         cmd = subprocess.Popen(command, shell=True, env=env)
         cmd.wait()
         if cmd.returncode != 0:
-            print("Command failed %d: %s" % (cmd.returncode, cmd))
+            print("Command failed %d: %s" % (cmd.returncode, command))
             return False
 
     for command in instance['script']:
         cmd = subprocess.Popen(command, shell=True, env=env)
         cmd.wait()
         if cmd.returncode != 0:
-            print("Command failed %d: %s" % (cmd.returncode, cmd))
+            print("Command failed %d: %s" % (cmd.returncode, command))
             return False
 
     return True
