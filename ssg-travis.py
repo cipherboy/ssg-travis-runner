@@ -39,12 +39,12 @@ def main():
         for instance in instances:
             ok = run_instance(instance)
             if not ok:
-                return
+                sys.exit(1)
     else:
         for num in sys.argv[1].split(','):
             ok = run_instance(instances[int(num)])
             if not ok:
-                return
+                sys.exit(1)
 
 
 if __name__ == "__main__":
